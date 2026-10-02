@@ -11,7 +11,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 FINDINGS_PATH = ROOT / "narrator" / "findings.json"
 SAMPLE_PATH = ROOT / "narrator" / "sample_output.txt"
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
 
 SYSTEM_INSTRUCTION = (
     "You are a senior data analyst writing for Mamaearth's regional ops and finance heads. "
@@ -44,15 +44,21 @@ def generate_scr_narrative(findings: dict) -> dict:
             "Name the return-risk pattern, the duplicate and outlier caveats, and an operational response.\n\n"
             f"Verified findings JSON:\n{json.dumps(findings, ensure_ascii=False, sort_keys=True)}"
         )
+        model = os.getenv("GEMINI_MODEL", DEFAULT_GEMINI_MODEL)
+        generation_config = {
+            "system_instruction": SYSTEM_INSTRUCTION,
+            "max_output_tokens": 500,
+        }
+        # Gemini 3 no longer uses sampling controls such as temperature. Keep
+        # temperature=0.0 for older Gemini 2.x models when an account still has
+        # access to them; the default Gemini 3.8 request follows Google's API.
+        if model.startswith("gemini-2."):
+            generation_config["temperature"] = 0.0
+
         response = client.models.generate_content(
-            model=os.getenv("GEMINI_MODEL", DEFAULT_GEMINI_MODEL),
+            model=model,
             contents=prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_INSTRUCTION,
-                # Temperature zero keeps a factual business report deterministic.
-                temperature=0.0,
-                max_output_tokens=500,
-            ),
+            config=types.GenerateContentConfig(**generation_config),
         )
         narrative = (response.text or "").strip()
         if not narrative:
