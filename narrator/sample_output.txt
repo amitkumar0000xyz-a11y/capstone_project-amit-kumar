@@ -1,0 +1,8 @@
+Situation
+The cleaned order set records INR 97,358.30 in revenue. After quantity outliers are excluded, March (2026-03) is the true peak month at INR 20,318.90.
+
+Complication
+The raw SQL total is INR 99,860.20; removing duplicate orders reconciles the total by INR 2,501.90. COD returns are 44.4%, compared with 14.7% for CARD and 18.9% for UPI. The highest-risk segment is COD in Tier-2 cities at 54.5%. The apparent 2026-01 revenue peak of INR 29,582.10 falls to INR 11,637.10 after the bulk-order outliers are excluded.
+
+Resolution
+Prioritize a COD-focused review in the highest-risk city tier: validate order intent before dispatch, review delivery failures and return reasons, and track the cleaned return rate by payment method and city tier. Keep duplicate reconciliation and quantity-outlier checks in the recurring pipeline so finance and operations use the same verified revenue view.
