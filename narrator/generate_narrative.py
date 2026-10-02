@@ -39,26 +39,43 @@ def generate_scr_narrative(findings: dict) -> dict:
             api_key=api_key,
             http_options=types.HttpOptions(timeout=60_000),
         )
+        required_figures = [
+            f"Cleaned revenue: INR {findings['cleaned_total_revenue_inr']:,.2f}",
+            f"COD return rate: {findings['return_rate_by_payment']['COD']:.1f}%",
+            (
+                f"Highest-risk segment: {findings['highest_risk_segment']['payment_method']} "
+                f"+ Tier-{findings['highest_risk_segment']['city_tier']} at "
+                f"{findings['highest_risk_segment']['return_rate_pct']:.1f}%"
+            ),
+            (
+                "Duplicate reconciliation delta: INR "
+                f"{findings['duplicate_reconciliation_delta_inr']:,.2f}"
+            ),
+            (
+                f"True peak month: {findings['true_peak_month']['month']} at INR "
+                f"{findings['true_peak_month']['revenue_inr']:,.2f}"
+            ),
+        ]
         prompt = (
             "Use only the JSON findings below to write a decision-ready SCR narrative. "
-            "Name the return-risk pattern, the duplicate and outlier caveats, and an operational response.\n\n"
-            f"Verified findings JSON:\n{json.dumps(findings, ensure_ascii=False, sort_keys=True)}"
+            "Name the return-risk pattern, the duplicate and outlier caveats, and an operational response. "
+            "Include every required figure below exactly, with all five figures present in the narrative. "
+            "Use three clearly labeled sections and do not add statistics.\n\n"
+            "Required figures:\n"
+            + "\n".join(required_figures)
+            + "\n\nVerified findings JSON:\n"
+            + json.dumps(findings, ensure_ascii=False, sort_keys=True)
         )
         model = os.getenv("GEMINI_MODEL", DEFAULT_GEMINI_MODEL)
-        generation_config = {
-            "system_instruction": SYSTEM_INSTRUCTION,
-            "max_output_tokens": 500,
-        }
-        # Gemini 3 no longer uses sampling controls such as temperature. Keep
-        # temperature=0.0 for older Gemini 2.x models when an account still has
-        # access to them; the default Gemini 3.8 request follows Google's API.
-        if model.startswith("gemini-2."):
-            generation_config["temperature"] = 0.0
-
         response = client.models.generate_content(
             model=model,
             contents=prompt,
-            config=types.GenerateContentConfig(**generation_config),
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_INSTRUCTION,
+                # Temperature zero is required by the capstone for this factual report.
+                temperature=0.0,
+                max_output_tokens=500,
+            ),
         )
         narrative = (response.text or "").strip()
         if not narrative:
