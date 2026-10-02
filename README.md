@@ -95,7 +95,7 @@ python narrator/generate_narrative.py
 
 In Google Colab, store the key in **Secrets** instead of typing it into a cell: click the key icon in the left sidebar, add a secret named `GEMINI_API_KEY`, paste the key into its value, and enable notebook access. The walkthrough reads that secret with `google.colab.userdata` and passes it to the same narrator script. Never commit the secret to GitHub.
 
-`GEMINI_MODEL` can optionally select another available model; the default is `gemini-2.5-flash` so the request can honor the brief's required `temperature=0.0`. The request sets a 500-token output limit and a 60-second timeout, and gives the verified JSON to the model as the prompt input. The script checks the saved `narrator/sample_output.txt` for every required number. If the selected model is unavailable to the account, the error is caught and the offline fallback still runs.
+`GEMINI_MODEL` can optionally select another available model; the default is `gemini-3.8-flash`, which is available to new Gemini API users. The request sets a 500-token output limit and a 60-second timeout, and gives the verified JSON to the model as the prompt input. The script uses `temperature=0.0` for Gemini 2.x models when the account still supports them. Gemini 3 migration guidance removes temperature sampling controls, so the default 3.8 request follows that API and relies on the factual system instruction plus the required numeric accuracy checks. The script checks the saved `narrator/sample_output.txt` for every required number. If the selected model is unavailable to the account, the error is caught and the offline fallback still runs.
 
 To run with no key, no network, and no API spend, leave `GEMINI_API_KEY` unset and run the same command:
 
