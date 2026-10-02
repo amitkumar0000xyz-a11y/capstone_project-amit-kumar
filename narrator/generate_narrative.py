@@ -136,12 +136,13 @@ def _numeric_accuracy_checks(narrative: str) -> list[tuple[str, str, bool]]:
     ]
     checks: list[tuple[str, str, bool]] = []
     for label, value in required:
-        passed = value in normalized
+        # The brief also accepts these three amounts rounded to one decimal place.
+        passed = value in normalized or value.removesuffix("0") in normalized
         checks.append((label, value, passed))
 
-    peak = normalized.find("20318.90")
+    peak_present = "20318.9" in normalized
     month_present = "March" in narrative or "2026-03" in narrative
-    peak_passed = peak >= 0 and month_present
+    peak_passed = peak_present and month_present
     checks.append(("true peak month and revenue", "March / 20318.90", peak_passed))
     return checks
 
