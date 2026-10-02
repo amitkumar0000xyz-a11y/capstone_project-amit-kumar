@@ -1,0 +1,9 @@
+__pycache__/
+.matplotlib-cache/
+.ipynb_checkpoints/
+.venv/
+.env
+analysis/eda_results.json
+*.db
+*.sqlite
+*.sqlite3
